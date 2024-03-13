@@ -2,9 +2,9 @@
 title: "Evaluation of Hybrid Quantum Approximate Inference Methods on Bayesian Networks"
 collection: publications
 permalink: /publication/paper
-excerpt: 'This paper is about the number 1. The number 2 is left for future work.'
-date: 2023-12-07
-venue: 'International Conference on Big Data Analytics, 2023'
+# excerpt: 'This paper is about the number 1. The number 2 is left for future work.'
+# date: 2023-12-07
+venue: 'International Conference on Big Data Analytics,2023'
 paperurl: 'https://link.springer.com/chapter/10.1007/978-3-031-49601-1_10'
 citation: 'Nayak, P., Seshadri, K. (2023). Evaluation of Hybrid Quantum Approximate Inference Methods on Bayesian Networks. In: Goyal, V., Kumar, N., Bhowmick, S.S., Goyal, P., Goyal, N., Kumar, D. (eds) Big Data and Artificial Intelligence. BDA 2023. Lecture Notes in Computer Science, vol 14418. Springer, Cham. https://doi.org/10.1007/978-3-031-49601-1_10'
 ---
