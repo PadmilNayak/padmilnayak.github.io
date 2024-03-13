@@ -1,6 +1,6 @@
 ---
 title: "Explainable Prediction of H-1B Visa Application Status"
-excerpt: "Using Machine Learning to predict the visa status and explain the potential reason behind rejection <br/><img src='/images/500x300.png'>"
+excerpt: "Using Machine Learning to predict the visa status and explain the potential reason behind rejection <br/>"
 collection: portfolio
 ---
 

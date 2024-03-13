@@ -1,6 +1,6 @@
 ---
 title: "Spotify Song Recommender & Analytics Dashboard"
-excerpt: "Developed a song recommender system along with a dashboard for visualizing the data <br/><img src='/images/500x300.png'>"
+excerpt: "Developed a song recommender system along with a dashboard for visualizing the data <br/>"
 collection: portfolio
 ---
 

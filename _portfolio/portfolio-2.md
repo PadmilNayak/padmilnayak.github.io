@@ -1,6 +1,7 @@
 ---
 title: "Ensemble Learning for Hybrid Recommender System"
-excerpt: "Implementation of a Hybrid Recommender approach to evaluate the performance<br/><img src='/images/500x300.png'>"
+excerpt: "Implementation of a Hybrid Recommender approach to evaluate the performance<br/>"
+# <img src='/images/500x300.png'>
 collection: portfolio
 ---
 

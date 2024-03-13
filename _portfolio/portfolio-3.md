@@ -1,6 +1,6 @@
 ---
 title: "Sales Forecasting of Furniture Store"
-excerpt: "Using multiple models to forecast sales in future using previous sales data <br/><img src='/images/500x300.png'>"
+excerpt: "Using multiple models to forecast sales in future using previous sales data <br/>"
 collection: portfolio
 ---
 

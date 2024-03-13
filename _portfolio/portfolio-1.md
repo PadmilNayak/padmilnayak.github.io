@@ -1,6 +1,6 @@
 ---
 title: "Inference in Quantum Bayesian Networks"
-excerpt: "Proposed and evaluated a Hybrid Quantum-classical Inference strategy for Bayesian Networks<br/><img src='/images/500x300.png'>"
+excerpt: "Proposed and evaluated a Hybrid Quantum-classical Inference strategy for Bayesian Networks<br/>"
 collection: portfolio
 ---
 
