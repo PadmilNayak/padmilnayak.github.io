@@ -1,7 +1,9 @@
 ---
-title: "Portfolio item number 1"
-excerpt: "Short description of portfolio item number 1<br/><img src='/images/500x300.png'>"
+title: "Inference in Quantum Bayesian Networks"
+excerpt: "Proposed and evaluated a Hybrid Quantum-classical Inference strategy for Bayesian Networks<br/><img src='/images/500x300.png'>"
 collection: portfolio
 ---
 
-This is an item in your portfolio. It can be have images or nice text. If you name the file .md, it will be parsed as markdown. If you name the file .html, it will be parsed as HTML. 
+* I have implemented the algorithm to construct Quantum circuit which is representative to a classical Bayesian network.
+* I have Performed various approximate inference strategies such as Gibbs, Metropolis-Hastings & Likelihood-weighted sampling for classical and Hybrid approximate inference in Bayesian networks
+* Analyzed the performance for various types of queries to conclude statistically significant performance improvement for inferring diagnostic queries.

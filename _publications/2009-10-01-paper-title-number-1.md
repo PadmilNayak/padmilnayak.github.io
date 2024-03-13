@@ -1,12 +1,12 @@
 ---
-title: "Paper Title Number 1"
+title: "Evaluation of Hybrid Quantum Approximate Inference Methods on Bayesian Networks"
 collection: publications
-permalink: /publication/2009-10-01-paper-title-number-1
+permalink: /publication/paper
 excerpt: 'This paper is about the number 1. The number 2 is left for future work.'
-date: 2009-10-01
-venue: 'Journal 1'
-paperurl: 'http://academicpages.github.io/files/paper1.pdf'
-citation: 'Your Name, You. (2009). &quot;Paper Title Number 1.&quot; <i>Journal 1</i>. 1(1).'
+date: 2023-12-07
+venue: 'International Conference on Big Data Analytics, 2023'
+paperurl: 'https://link.springer.com/chapter/10.1007/978-3-031-49601-1_10'
+citation: 'Nayak, P., Seshadri, K. (2023). Evaluation of Hybrid Quantum Approximate Inference Methods on Bayesian Networks. In: Goyal, V., Kumar, N., Bhowmick, S.S., Goyal, P., Goyal, N., Kumar, D. (eds) Big Data and Artificial Intelligence. BDA 2023. Lecture Notes in Computer Science, vol 14418. Springer, Cham. https://doi.org/10.1007/978-3-031-49601-1_10'
 ---
 
-The contents above will be part of a list of publications, if the user clicks the link for the publication than the contents of section will be rendered as a full page, allowing you to provide more information about the paper for the reader. When publications are displayed as a single page, the contents of the above "citation" field will automatically be included below this section in a smaller font.
+Bayesian networks are a type of probabilistic graphical model widely used to characterize various real-world problem scenarios due to their ability to model probabilistic dependence between variables. In classical bayesian networks, performing exact as well as approximate inferences are NP-Hard. Quantum circuit developed to represent bayesian network can be used to perform inference, but it is prone to quantum noise and strictly limited by the maximum number of shots that can be performed on the quantum hardware. In this paper, we propose a technique to implement hybrid quantum approximate inference methods and subsequently analyze their performance on the quantum circuit representation of the bayesian network. The approach involves computing priors and conditionals from the quantum circuit generated samples to perform likelihood-weighted sampling and MCMC-based sampling. The intuition behind this approach is that a quantum circuit can compromise on the structural dependency of the bayesian network due to the decoherence errors and also has difficulty in encoding the probability of rare events, which can be overcome with the help of hybrid quantum inference techniques. The error analysis on different types of queries has been carried out to compare the sampling approaches for three Bayesian Networks. All the experiments performed in this paper utilize the SV1 quantum simulator provided by the Amazon Braket environment.
