@@ -1,0 +1,77 @@
+/* ============================================================
+   Styling for markdown-rendered project/publication bodies
+   (content produced by marked.parse() inside .detail-content)
+   ============================================================ */
+
+.detail-content h2 {
+    font-family: "Raleway", Helvetica, sans-serif;
+    font-size: 1.2em;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-color);
+    margin: 2em 0 0.7em;
+}
+.detail-content h2:first-child { margin-top: 0; }
+
+.detail-content h4 {
+    font-family: "Raleway", Helvetica, sans-serif;
+    font-size: 0.95em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-color);
+    margin: 1.4em 0 0.5em;
+}
+
+.detail-content a {
+    color: var(--hover-color);
+    text-decoration: underline;
+}
+.detail-content a:hover { color: var(--orange-color); }
+
+.detail-content strong { color: var(--text-color); }
+
+.detail-content code {
+    font-family: 'Courier New', Courier, monospace;
+    background: var(--light-gray);
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
+    border-radius: 2px;
+}
+
+.detail-content blockquote {
+    border-left: solid 3px var(--orange-color);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1em 0 1.4em;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.detail-content ol {
+    margin-left: 1.5em;
+    margin-bottom: 1.4em;
+}
+
+/* Fenced code blocks rendered by marked, then enhanced with a
+   header + copy button (matching the site's existing code sample
+   look) by the enhanceCodeBlocks() helper in project.html /
+   publication.html. Raw <pre><code> before enhancement still gets
+   a sane baseline look. */
+.detail-content pre {
+    background: white;
+    border: solid 1px rgba(160, 160, 160, 0.3);
+    overflow-x: auto;
+    margin: 0 0 1.4em;
+}
+.detail-content pre code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88em;
+    line-height: 1.6;
+    display: block;
+    padding: 1.5em;
+    background: none;
+}
+.detail-content .code-wrapper pre {
+    border: none;
+    margin: 0;
+}

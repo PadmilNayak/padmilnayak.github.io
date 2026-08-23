@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="resources/style_main.css">
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header id="header">
+        <h1><a href="index.html" id="site-initials">PN</a></h1>
+        <nav class="links">
+            <div class="menu-toggle">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="close-btn">&times;</div>
+            <ul class="menu" id="nav-menu"></ul>
+        </nav>
+    </header>
+
+    <!-- ===== PROFILE ===== -->
+    <section class="profile-section">
+        <div class="hexagon-img-container" id="profile-img-container">
+            <!-- Filled by JS: either <img> or initials placeholder -->
+        </div>
+        <h1 class="profile-name" id="profile-name"></h1>
+        <p class="profile-title"  id="profile-title"></p>
+        <p class="profile-desc"   id="profile-desc"></p>
+    </section>
+
+    <!-- ===== INTERESTS ===== -->
+    <section class="interests-section" id="interests-section">
+        <h2 class="section-name">Interests</h2>
+        <!-- Items injected by JS -->
+    </section>
+
+    <!-- ===== TECH ARSENAL ===== -->
+    <section class="tools-section" id="tools-section">
+        <h2 class="section-name">Tech Arsenal</h2>
+        <!-- Logos injected by JS -->
+    </section>
+
+    <!-- ===== PROJECTS ===== -->
+    <section id="projects_section" class="projects-section">
+        <h2 class="section-name">Projects</h2>
+        <div class="project-grid" id="projects-grid"></div>
+    </section>
+
+    <!-- ===== PUBLICATIONS ===== -->
+    <section id="publication_section" class="publications-section">
+        <div class="section-name">Publications</div>
+        <div id="publications-list" style="width:100%"></div>
+    </section>
+
+    <!-- ===== FOOTER / CONTACT ===== -->
+    <section id="contact" class="footer" id="footer-section"></section>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="resources/content-loader.js"></script>
+    <script>
+    // -------------------------------------------------------
+    // Utility: fetch + parse a Markdown+frontmatter content file
+    // (see resources/content-loader.js for parseSingle/parseCollection)
+    // -------------------------------------------------------
+    async function fetchText(path) {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`Cannot load ${path} (${res.status})`);
+        return res.text();
+    }
+
+    // -------------------------------------------------------
+    // Render: config (profile, nav, footer)
+    // -------------------------------------------------------
+    function renderConfig(cfg) {
+        document.title = cfg.profile.name + ' – Portfolio';
+        document.getElementById('site-initials').textContent = cfg.profile.initials || 'PN';
+
+        // Nav
+        const menu = document.getElementById('nav-menu');
+        menu.innerHTML = (cfg.nav || []).map(item =>
+            `<li><a class="menu-link" href="#${item.anchor}">${item.label}</a></li>`
+        ).join('');
+        attachMenuLinks();
+
+        // Profile image (with graceful fallback to initials)
+        const container = document.getElementById('profile-img-container');
+        if (cfg.profile.image) {
+            const img = document.createElement('img');
+            img.src = cfg.profile.image;
+            img.alt = cfg.profile.name;
+            img.className = 'hexagon-img';
+            // If image fails to load, show initials
+            img.onerror = () => {
+                container.innerHTML = '';
+                showInitialsPlaceholder(container, cfg.profile.initials || 'PN');
+            };
+            container.appendChild(img);
+        } else {
+            showInitialsPlaceholder(container, cfg.profile.initials || 'PN');
+        }
+
+        document.getElementById('profile-name').textContent  = cfg.profile.name        || '';
+        document.getElementById('profile-title').textContent = cfg.profile.title       || '';
+        document.getElementById('profile-desc').textContent  = cfg.profile.description || '';
+
+        // Footer social links
+        const footer = document.getElementById('contact');
+        const socials = cfg.social || {};
+        const iconMap  = { github: 'fab fa-github', linkedin: 'fab fa-linkedin',
+                           twitter: 'fab fa-twitter', email: 'fas fa-envelope' };
+        footer.innerHTML = Object.entries(socials)
+            .filter(([, url]) => url)
+            .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">
+                <i class="${iconMap[key] || 'fas fa-link'}"></i></a>`)
+            .join('');
+    }
+
+    function showInitialsPlaceholder(container, initials) {
+        container.innerHTML = `<div class="hexagon-placeholder">${initials}</div>`;
+    }
+
+    // -------------------------------------------------------
+    // Render: skills (interests + tools)
+    // -------------------------------------------------------
+    function renderSkills(skills) {
+        const interestsSec = document.getElementById('interests-section');
+        (skills.interests || []).forEach(topic => {
+            const div = document.createElement('div');
+            div.className = 'interest-item';
+            div.innerHTML = `<h3>${topic}</h3>`;
+            interestsSec.appendChild(div);
+        });
+
+        const toolsSec = document.getElementById('tools-section');
+        (skills.tools || []).forEach(tool => {
+            const img = document.createElement('img');
+            img.src = tool.image;
+            img.alt = tool.name;
+            img.title = tool.name;
+            img.className = 'tool-logo';
+            toolsSec.appendChild(img);
+        });
+    }
+
+    // -------------------------------------------------------
+    // Render: projects grid
+    // -------------------------------------------------------
+    function renderProjects(projects) {
+        const grid = document.getElementById('projects-grid');
+        if (!projects || !projects.length) {
+            grid.innerHTML = '<p style="color:#aaa;padding:1em">No projects yet.</p>';
+            return;
+        }
+        grid.innerHTML = projects.map(p => {
+            const tagsHtml = (p.tags || []).length
+                ? `<div class="project-card-tags">${p.tags.map(t =>
+                    `<span class="card-tag">${t}</span>`).join('')}</div>`
+                : '';
+            const actionsHtml = buildCardActions(p);
+            const imgHtml = p.image
+                ? `<img src="${p.image}" alt="${p.title}" class="project-image">`
+                : `<div class="project-image" style="background:#e8e8e8;display:flex;
+                    align-items:center;justify-content:center;color:#aaa;
+                    font-family:Raleway,sans-serif;font-size:0.9em;
+                    letter-spacing:0.1em;text-transform:uppercase;">No Image</div>`;
+            return `
+            <div class="project-card-link" onclick="window.location.href='project.html?id=${p.id}'">
+                <div class="project-card">
+                    ${imgHtml}
+                    <div class="project-content">
+                        <h3 class="project-title">${p.title}</h3>
+                        <p class="project-description">${p.description}</p>
+                        ${tagsHtml}
+                        ${actionsHtml}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function buildCardActions(p) {
+        const links = [];
+        if (p.github) links.push(
+            `<a href="${p.github}" class="card-action-link" target="_blank"
+               rel="noopener" onclick="event.stopPropagation()">
+                <i class="fab fa-github"></i> Code</a>`);
+        if (p.demo)   links.push(
+            `<a href="${p.demo}" class="card-action-link" target="_blank"
+               rel="noopener" onclick="event.stopPropagation()">
+                <i class="fas fa-external-link-alt"></i> Demo</a>`);
+        return links.length
+            ? `<div class="project-card-actions">${links.join('')}</div>`
+            : '';
+    }
+
+    // -------------------------------------------------------
+    // Render: publications accordion
+    // -------------------------------------------------------
+    function renderPublications(pubs) {
+        const list = document.getElementById('publications-list');
+        if (!pubs || !pubs.length) {
+            list.innerHTML = '<p style="color:#aaa;padding:1em">No publications yet.</p>';
+            return;
+        }
+        list.innerHTML = pubs.map(pub => {
+            const authors = (pub.authors || []).length
+                ? `<div class="publication-authors-list">${pub.authors.join(', ')}</div>`
+                : '';
+            const tags = (pub.tags || []).length
+                ? `<div class="publication-tags">${pub.tags.map(t =>
+                    `<span class="pub-tag">${t}</span>`).join('')}</div>`
+                : '';
+            const links = buildPubLinks(pub);
+            return `
+            <div class="publication-item">
+                <div class="publication-header" onclick="togglePublication(this)">
+                    <div class="publication-title">${pub.title}</div>
+                    <div class="publication-details">${pub.venue}${pub.year ? ', ' + pub.year : ''}</div>
+                    <div class="expand-icon"></div>
+                </div>
+                <div class="publication-content">
+                    <div class="publication-inner">
+                        ${authors}
+                        <div class="publication-abstract">${(pub.abstract||'').trim().replace(/\n\n/g,'</p><p>').replace(/\n/g,' ')}</div>
+                        ${tags}
+                        <div class="pub-links">${links}</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function buildPubLinks(pub) {
+        const links = [];
+        if (pub.link)
+            links.push(`<a href="${pub.link}" class="publication-link" target="_blank" rel="noopener">View Publication</a>`);
+        if (pub.pdf)
+            links.push(`<a href="${pub.pdf}" class="publication-link secondary" target="_blank" rel="noopener"><i class="fas fa-file-pdf"></i> PDF</a>`);
+        if (pub.code)
+            links.push(`<a href="${pub.code}" class="publication-link secondary" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>`);
+        links.push(`<a href="publication.html?id=${pub.id}" class="publication-link secondary">Full Details</a>`);
+        return links.join('');
+    }
+
+    // -------------------------------------------------------
+    // Publication accordion toggle
+    // -------------------------------------------------------
+    function togglePublication(header) {
+        const item = header.parentElement;
+        const content = item.querySelector('.publication-content');
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.publication-item').forEach(p => {
+            p.classList.remove('active');
+            p.querySelector('.publication-content').classList.remove('active');
+        });
+        if (!isActive) {
+            item.classList.add('active');
+            content.classList.add('active');
+        }
+    }
+
+    // -------------------------------------------------------
+    // Mobile menu
+    // -------------------------------------------------------
+    document.querySelector('.menu-toggle').addEventListener('click', () => {
+        document.querySelector('.menu-toggle').classList.add('hidden');
+        document.querySelector('.close-btn').classList.add('active');
+        document.querySelector('nav ul').classList.add('active');
+    });
+    document.querySelector('.close-btn').addEventListener('click', closeMenu);
+
+    function closeMenu() {
+        document.querySelector('.menu-toggle').classList.remove('hidden');
+        document.querySelector('.close-btn').classList.remove('active');
+        document.querySelector('nav ul').classList.remove('active');
+    }
+
+    function attachMenuLinks() {
+        document.querySelectorAll('.menu-link').forEach(a =>
+            a.addEventListener('click', closeMenu));
+    }
+
+    // -------------------------------------------------------
+    // Bootstrap
+    // -------------------------------------------------------
+    async function init() {
+        try {
+            const [cfgText, skillsText, projectsText, pubsText] = await Promise.all([
+                fetchText('content/config.md'),
+                fetchText('content/skills.md'),
+                fetchText('content/projects.md'),
+                fetchText('content/publications.md'),
+            ]);
+            const cfg      = parseSingle(cfgText);
+            const skills    = parseSingle(skillsText);
+            const projects  = parseCollection(projectsText);
+            const pubs      = parseCollection(pubsText);
+            renderConfig(cfg);
+            renderSkills(skills);
+            renderProjects(projects);
+            renderPublications(pubs);
+        } catch (err) {
+            console.error('Portfolio load error:', err);
+            // Show a minimal fallback so the page isn't blank
+            document.getElementById('profile-name').textContent = 'Portfolio';
+            document.getElementById('profile-desc').textContent =
+                'Content could not be loaded. If viewing locally, please use a local server ' +
+                '(e.g. python -m http.server 8000).';
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>

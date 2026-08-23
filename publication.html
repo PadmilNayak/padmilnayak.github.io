@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+    <link rel="stylesheet" href="resources/detail.css">
+    <link rel="stylesheet" href="resources/content-body.css">
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header id="header">
+        <h1><a href="index.html" id="site-initials">PN</a></h1>
+        <nav class="links">
+            <div class="menu-toggle">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="close-btn">&times;</div>
+            <ul class="menu" id="nav-menu"></ul>
+        </nav>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container" id="main-container">
+        <div id="loading" style="text-align:center;padding:3em;color:#aaa;
+             font-family:'Raleway',sans-serif;letter-spacing:0.1em;text-transform:uppercase">
+            Loading…
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <section id="contact" class="footer"></section>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="resources/content-loader.js"></script>
+    <script>
+    // -------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------
+    async function fetchText(path) {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`Cannot load ${path}`);
+        return res.text();
+    }
+
+    // Turn every <pre><code> block inside `container` into a
+    // highlighted, copy-button-equipped code block (used for the
+    // optional Citation/bibtex section written in the markdown body).
+    function enhanceCodeBlocks(container) {
+        container.querySelectorAll('pre code').forEach(codeEl => {
+            hljs.highlightElement(codeEl);
+            const lang = (codeEl.className.match(/language-(\S+)/) || [])[1] || 'text';
+            const pre = codeEl.parentElement;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-wrapper';
+            wrapper.innerHTML = `<div class="code-header"><span>${lang}</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>`;
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+        });
+    }
+
+    function copyCode(btn) {
+        const code = btn.closest('.code-wrapper').querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+    }
+
+    // -------------------------------------------------------
+    // Shared shell (header + footer)
+    // -------------------------------------------------------
+    function renderShell(cfg) {
+        document.getElementById('site-initials').textContent = cfg.profile.initials || 'PN';
+
+        const menu = document.getElementById('nav-menu');
+        menu.innerHTML = (cfg.nav || []).map(item =>
+            `<li><a class="menu-link" href="index.html#${item.anchor}">${item.label}</a></li>`
+        ).join('');
+
+        const footer = document.getElementById('contact');
+        const socials = cfg.social || {};
+        const iconMap = { github:'fab fa-github', linkedin:'fab fa-linkedin',
+                          twitter:'fab fa-twitter', email:'fas fa-envelope' };
+        footer.innerHTML = Object.entries(socials)
+            .filter(([, url]) => url)
+            .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">
+                <i class="${iconMap[key] || 'fas fa-link'}"></i></a>`)
+            .join('');
+
+        attachMenu();
+    }
+
+    function attachMenu() {
+        const toggle = document.querySelector('.menu-toggle');
+        const close  = document.querySelector('.close-btn');
+        const ul     = document.querySelector('nav ul');
+        toggle.addEventListener('click', () => {
+            toggle.classList.add('hidden');
+            close.classList.add('active');
+            ul.classList.add('active');
+        });
+        close.addEventListener('click', closeMenu);
+        document.querySelectorAll('.menu-link').forEach(a =>
+            a.addEventListener('click', closeMenu));
+    }
+    function closeMenu() {
+        document.querySelector('.menu-toggle').classList.remove('hidden');
+        document.querySelector('.close-btn').classList.remove('active');
+        document.querySelector('nav ul').classList.remove('active');
+    }
+
+    // -------------------------------------------------------
+    // Render publication detail
+    // -------------------------------------------------------
+    function renderPublication(pub) {
+        document.title = pub.title + ' – Portfolio';
+
+        const container = document.getElementById('main-container');
+        container.innerHTML = '';
+
+        // Back button
+        const back = document.createElement('a');
+        back.href = 'index.html#publication_section';
+        back.className = 'back-btn';
+        back.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Publications';
+        container.appendChild(back);
+
+        // Header
+        const tagsHtml = (pub.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+        const header = document.createElement('div');
+        header.className = 'detail-header';
+        header.innerHTML = `
+            <h1 class="detail-main-title">${pub.title}</h1>
+            <div class="detail-meta">${pub.venue}${pub.year ? ' &bull; ' + pub.year : ''}</div>
+            ${tagsHtml ? `<div class="detail-tags">${tagsHtml}</div>` : ''}`;
+        container.appendChild(header);
+
+        // Action buttons
+        const actions = buildPubActions(pub);
+        if (actions) container.insertAdjacentHTML('beforeend',
+            `<div class="detail-actions">${actions}</div>`);
+
+        // Abstract
+        const h2 = document.createElement('h2');
+        h2.className = 'section-name';
+        h2.textContent = 'Abstract';
+        container.appendChild(h2);
+
+        const content = document.createElement('div');
+        content.className = 'detail-content';
+
+        // Authors
+        if (pub.authors && pub.authors.length) {
+            const p = document.createElement('p');
+            p.className = 'pub-authors';
+            p.textContent = pub.authors.join(', ');
+            content.appendChild(p);
+        }
+
+        // Abstract paragraphs
+        const absText = (pub.abstract || '').trim();
+        absText.split(/\n\n+/).forEach(para => {
+            const p = document.createElement('p');
+            p.textContent = para.trim().replace(/\n/g, ' ');
+            content.appendChild(p);
+        });
+
+        container.appendChild(content);
+
+        // Extra content from the publication's markdown body — typically
+        // a "## Citation" heading with a ```bibtex fenced block.
+        if (pub.body) {
+            const extra = document.createElement('div');
+            extra.className = 'detail-content';
+            extra.innerHTML = marked.parse(pub.body);
+            container.appendChild(extra);
+            enhanceCodeBlocks(extra);
+        }
+    }
+
+    function buildPubActions(pub) {
+        const btns = [];
+        if (pub.link) btns.push(
+            `<a href="${pub.link}" class="action-btn primary" target="_blank" rel="noopener">
+                <i class="fas fa-external-link-alt"></i> View Publication</a>`);
+        if (pub.pdf) btns.push(
+            `<a href="${pub.pdf}" class="action-btn secondary" target="_blank" rel="noopener">
+                <i class="fas fa-file-pdf"></i> PDF</a>`);
+        if (pub.code) btns.push(
+            `<a href="${pub.code}" class="action-btn secondary" target="_blank" rel="noopener">
+                <i class="fab fa-github"></i> Code</a>`);
+        if (pub.slides) btns.push(
+            `<a href="${pub.slides}" class="action-btn secondary" target="_blank" rel="noopener">
+                <i class="fas fa-presentation"></i> Slides</a>`);
+        return btns.join('');
+    }
+
+    // -------------------------------------------------------
+    // Bootstrap
+    // -------------------------------------------------------
+    async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const id     = params.get('id');
+
+        if (!id) { window.location.href = 'index.html'; return; }
+
+        try {
+            const [cfgText, pubsText] = await Promise.all([
+                fetchText('content/config.md'),
+                fetchText('content/publications.md'),
+            ]);
+            const cfg  = parseSingle(cfgText);
+            const pubs = parseCollection(pubsText);
+
+            renderShell(cfg);
+
+            const pub = pubs.find(p => p.id === id);
+            if (!pub) {
+                document.getElementById('main-container').innerHTML = `
+                    <div style="text-align:center;padding:4em">
+                        <h2 style="font-family:'Raleway',sans-serif;text-transform:uppercase;
+                                   letter-spacing:0.1em">Publication not found</h2>
+                        <a href="index.html" style="color:var(--orange-color);
+                           font-family:'Raleway',sans-serif;font-size:0.85em;
+                           letter-spacing:0.1em;text-transform:uppercase;
+                           text-decoration:none;display:block;margin-top:1.5em">
+                            ← Back to Portfolio</a>
+                    </div>`;
+                return;
+            }
+
+            renderPublication(pub);
+
+        } catch (err) {
+            console.error('Publication page error:', err);
+            document.getElementById('main-container').innerHTML = `
+                <div style="text-align:center;padding:4em;color:#aaa;
+                     font-family:'Raleway',sans-serif;text-transform:uppercase;letter-spacing:0.1em">
+                    <p>Could not load publication data.</p>
+                    <a href="index.html" style="color:var(--orange-color);font-size:0.85em;
+                       text-decoration:none;display:block;margin-top:2em">← Back</a>
+                </div>`;
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>

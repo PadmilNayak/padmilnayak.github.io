@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="bgIC" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#243447"/>
+      <stop offset="100%" stop-color="#141e2b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bgIC)"/>
+
+  <!-- image frame -->
+  <g transform="translate(140,110)">
+    <rect x="0" y="0" width="260" height="190" rx="8" fill="#ffffff" opacity="0.08"/>
+    <rect x="0" y="0" width="260" height="190" rx="8" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="2"/>
+    <circle cx="55" cy="55" r="18" fill="#d16004" opacity="0.85"/>
+    <polygon points="10,160 90,90 140,130 190,70 250,160" fill="#3498db" opacity="0.55"/>
+  </g>
+
+  <!-- attention heat spots over the image -->
+  <g fill="#d16004" opacity="0.55">
+    <circle cx="195" cy="150" r="20"/>
+    <circle cx="260" cy="180" r="14"/>
+  </g>
+
+  <!-- arrows from attention spots to caption words -->
+  <g stroke="#3498db" stroke-width="1.5" fill="none" opacity="0.8">
+    <path d="M400,180 C450,150 480,140 520,150" marker-end="url(#arrow)"/>
+    <path d="M400,220 C450,240 480,250 520,235" marker-end="url(#arrow)"/>
+    <path d="M400,260 C450,270 480,275 520,280" marker-end="url(#arrow)"/>
+  </g>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#3498db"/>
+    </marker>
+  </defs>
+
+  <!-- generated caption words -->
+  <g font-family="Raleway, Helvetica, sans-serif" font-size="20" fill="#ffffff">
+    <rect x="520" y="140" width="70" height="22" rx="4" fill="#ffffff" opacity="0.12"/>
+    <text x="530" y="156">"a dog"</text>
+    <rect x="520" y="224" width="110" height="22" rx="4" fill="#ffffff" opacity="0.12"/>
+    <text x="530" y="240">"is jumping"</text>
+    <rect x="520" y="270" width="110" height="22" rx="4" fill="#ffffff" opacity="0.12"/>
+    <text x="530" y="286">"over a fence"</text>
+  </g>
+
+  <text x="400" y="420" text-anchor="middle" font-family="Raleway, Helvetica, sans-serif"
+        font-size="30" font-weight="900" letter-spacing="2.5" fill="#ffffff" text-transform="uppercase">IMAGE CAPTIONING</text>
+  <text x="400" y="448" text-anchor="middle" font-family="Raleway, Helvetica, sans-serif"
+        font-size="13" letter-spacing="3" fill="#3498db">CNN ENCODER + BAHDANAU ATTENTION LSTM</text>
+</svg>

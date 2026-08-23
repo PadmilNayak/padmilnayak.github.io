@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+    <link rel="stylesheet" href="resources/detail.css">
+    <link rel="stylesheet" href="resources/content-body.css">
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header id="header">
+        <h1><a href="index.html" id="site-initials">PN</a></h1>
+        <nav class="links">
+            <div class="menu-toggle">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="close-btn">&times;</div>
+            <ul class="menu" id="nav-menu"></ul>
+        </nav>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container" id="main-container">
+        <div id="loading" style="text-align:center;padding:3em;color:#aaa;
+             font-family:'Raleway',sans-serif;letter-spacing:0.1em;text-transform:uppercase">
+            Loading…
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <section id="contact" class="footer"></section>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="resources/content-loader.js"></script>
+    <script>
+    // -------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------
+    async function fetchText(path) {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`Cannot load ${path}`);
+        return res.text();
+    }
+
+    // Turn every <pre><code> block inside `container` into a
+    // highlighted, copy-button-equipped code block matching the
+    // site's existing code-sample styling.
+    function enhanceCodeBlocks(container) {
+        container.querySelectorAll('pre code').forEach(codeEl => {
+            hljs.highlightElement(codeEl);
+            const lang = (codeEl.className.match(/language-(\S+)/) || [])[1] || 'text';
+            const pre = codeEl.parentElement;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-wrapper';
+            wrapper.innerHTML = `<div class="code-header"><span>${lang}</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>`;
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+        });
+    }
+
+    // -------------------------------------------------------
+    // Shared: header + footer
+    // -------------------------------------------------------
+    function renderShell(cfg) {
+        document.getElementById('site-initials').textContent = cfg.profile.initials || 'PN';
+
+        const menu = document.getElementById('nav-menu');
+        menu.innerHTML = (cfg.nav || []).map(item =>
+            `<li><a class="menu-link" href="index.html#${item.anchor}">${item.label}</a></li>`
+        ).join('');
+
+        const footer = document.getElementById('contact');
+        const socials = cfg.social || {};
+        const iconMap = { github:'fab fa-github', linkedin:'fab fa-linkedin',
+                          twitter:'fab fa-twitter', email:'fas fa-envelope' };
+        footer.innerHTML = Object.entries(socials)
+            .filter(([, url]) => url)
+            .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">
+                <i class="${iconMap[key] || 'fas fa-link'}"></i></a>`)
+            .join('');
+
+        attachMenu();
+    }
+
+    function attachMenu() {
+        const toggle = document.querySelector('.menu-toggle');
+        const close  = document.querySelector('.close-btn');
+        const ul     = document.querySelector('nav ul');
+        toggle.addEventListener('click', () => {
+            toggle.classList.add('hidden');
+            close.classList.add('active');
+            ul.classList.add('active');
+        });
+        close.addEventListener('click', closeMenu);
+        document.querySelectorAll('.menu-link').forEach(a =>
+            a.addEventListener('click', closeMenu));
+    }
+    function closeMenu() {
+        document.querySelector('.menu-toggle').classList.remove('hidden');
+        document.querySelector('.close-btn').classList.remove('active');
+        document.querySelector('nav ul').classList.remove('active');
+    }
+
+    // -------------------------------------------------------
+    // Render project detail
+    // -------------------------------------------------------
+    function renderProject(p) {
+        document.title = p.title + ' – Portfolio';
+
+        const container = document.getElementById('main-container');
+        container.innerHTML = '';
+
+        // Back button
+        const back = document.createElement('a');
+        back.href = 'index.html#projects_section';
+        back.className = 'back-btn';
+        back.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Projects';
+        container.appendChild(back);
+
+        // Header: title + meta + tags
+        const header = document.createElement('div');
+        header.className = 'detail-header';
+        const tagsHtml = (p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+        header.innerHTML = `
+            <h1 class="detail-main-title">${p.title}</h1>
+            ${tagsHtml ? `<div class="detail-tags">${tagsHtml}</div>` : ''}`;
+        container.appendChild(header);
+
+        // Hero image
+        if (p.image) {
+            const heroDiv = document.createElement('div');
+            heroDiv.className = 'detail-hero';
+            heroDiv.innerHTML = `<img src="${p.image}" alt="${p.title}" class="detail-hero-image">`;
+            container.appendChild(heroDiv);
+        }
+
+        // Action buttons (GitHub / Demo / Paper)
+        const actions = buildActions(p);
+        if (actions) container.insertAdjacentHTML('beforeend', actions);
+
+        // Overview — rendered from the project's Markdown body
+        if (p.body) {
+            const h = document.createElement('h2');
+            h.className = 'section-name';
+            h.textContent = 'Overview';
+            container.appendChild(h);
+
+            const content = document.createElement('div');
+            content.className = 'detail-content';
+            content.innerHTML = marked.parse(p.body);
+            container.appendChild(content);
+
+            enhanceCodeBlocks(content);
+        }
+
+        // Gallery
+        if (p.gallery && p.gallery.length) {
+            const h = document.createElement('h2');
+            h.className = 'section-name';
+            h.textContent = 'Gallery';
+            container.appendChild(h);
+
+            const grid = document.createElement('div');
+            grid.className = 'gallery-grid';
+            grid.style.marginBottom = '2em';
+            grid.innerHTML = p.gallery.map(item => `
+                <div class="gallery-item">
+                    <img src="${item.image}" alt="${item.caption||''}" class="gallery-image">
+                    ${item.caption ? `<div class="gallery-caption">${item.caption}</div>` : ''}
+                </div>`).join('');
+            container.appendChild(grid);
+        }
+    }
+
+    function buildActions(p) {
+        const btns = [];
+        if (p.github) btns.push(
+            `<a href="${p.github}" class="action-btn primary" target="_blank" rel="noopener">
+                <i class="fab fa-github"></i> View Code</a>`);
+        if (p.demo) btns.push(
+            `<a href="${p.demo}" class="action-btn secondary" target="_blank" rel="noopener">
+                <i class="fas fa-external-link-alt"></i> Live Demo</a>`);
+        if (p.paper) btns.push(
+            `<a href="${p.paper}" class="action-btn secondary" target="_blank" rel="noopener">
+                <i class="fas fa-file-alt"></i> Paper</a>`);
+        return btns.length
+            ? `<div class="detail-actions">${btns.join('')}</div>` : '';
+    }
+
+    function copyCode(btn) {
+        const code = btn.closest('.code-wrapper').querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+    }
+
+    // -------------------------------------------------------
+    // Bootstrap
+    // -------------------------------------------------------
+    async function init() {
+        const params  = new URLSearchParams(window.location.search);
+        const id      = params.get('id');
+
+        if (!id) { window.location.href = 'index.html'; return; }
+
+        try {
+            const [cfgText, projectsText] = await Promise.all([
+                fetchText('content/config.md'),
+                fetchText('content/projects.md'),
+            ]);
+            const cfg      = parseSingle(cfgText);
+            const projects = parseCollection(projectsText);
+
+            renderShell(cfg);
+
+            const project = projects.find(p => p.id === id);
+            if (!project) {
+                document.getElementById('main-container').innerHTML = `
+                    <div style="text-align:center;padding:4em">
+                        <h2 style="font-family:'Raleway',sans-serif;text-transform:uppercase;
+                                   letter-spacing:0.1em">Project not found</h2>
+                        <a href="index.html" style="color:var(--orange-color);
+                           font-family:'Raleway',sans-serif;font-size:0.85em;
+                           letter-spacing:0.1em;text-transform:uppercase;
+                           text-decoration:none;display:block;margin-top:1.5em">
+                            ← Back to Portfolio</a>
+                    </div>`;
+                return;
+            }
+
+            renderProject(project);
+
+        } catch (err) {
+            console.error('Project page error:', err);
+            document.getElementById('main-container').innerHTML = `
+                <div style="text-align:center;padding:4em;color:#aaa;
+                     font-family:'Raleway',sans-serif;text-transform:uppercase;
+                     letter-spacing:0.1em">
+                    <p>Could not load project data.</p>
+                    <p style="font-size:0.8em;margin-top:1em">
+                        Viewing locally? Run a local server:<br>
+                        <code style="font-family:monospace;color:#555">
+                        python -m http.server 8000</code></p>
+                    <a href="index.html" style="color:var(--orange-color);
+                       font-size:0.85em;text-decoration:none;display:block;
+                       margin-top:2em">← Back to Portfolio</a>
+                </div>`;
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>
